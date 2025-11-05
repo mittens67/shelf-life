@@ -1,23 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { DialogueBox } from "../ecs/systems/dialogue-box";
 import { ChoiceBox } from "../ecs/systems/choice-box";
-import { CardGameBox } from "../ecs/systems/card-game-box"; // 🆕 your mini-game UI
+import { CardGameBox } from "../ecs/systems/card-game-box";
+import { WheelGameBox } from "../ecs/systems/wheel-game-box";
 import { BackgroundRenderSystem } from "../ecs/systems/background-render";
 import { startNodeEntity } from "../ecs/entities/start-node";
 import { useMusicManager } from "../hooks/use-music-manager";
 import { ENTITY_MAP } from "../ecs/entities/_registry";
 import { MiniGameComponent } from "../ecs/components/mini-game";
-import { WheelGameBox } from "../ecs/systems/wheel-game-box";
 
-export const GamePage: React.FC = () => {
+interface GamePageProps {
+  onEnd: () => void; // 👈 add this prop
+}
+
+export const GamePage: React.FC<GamePageProps> = ({ onEnd }) => {
   const [currentEntity, setCurrentEntity] = useState(startNodeEntity);
-  const [phase, setPhase] = useState<"dialogue" | "choice" | "miniGame">(
-    "dialogue"
-  );
+  const [phase, setPhase] = useState<"dialogue" | "choice" | "miniGame">("dialogue");
   const { playMusic, stopMusic } = useMusicManager();
 
   const bgSystem = new BackgroundRenderSystem();
 
+  // 🎵 Start background music when entering the game
   useEffect(() => {
     playMusic("/assets/music/main-bgm.mp3");
     return () => stopMusic();
@@ -28,6 +31,9 @@ export const GamePage: React.FC = () => {
       setPhase("choice");
     } else if (currentEntity.components.miniGame) {
       setPhase("miniGame");
+    } else if (currentEntity.components.ending) {
+      // 🎯 Reached an ending — go to End Screen
+      onEnd();
     }
   };
 
@@ -53,10 +59,10 @@ export const GamePage: React.FC = () => {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
-      {/* 🎨 Render Background */}
+      {/* 🎨 Background */}
       {bgSystem.render(currentEntity)}
 
-      {/* 🎮 Main Gameplay Layer */}
+      {/* 🎮 Gameplay layer */}
       <div className="absolute inset-0 flex justify-center items-end">
         {phase === "dialogue" && (
           <DialogueBox

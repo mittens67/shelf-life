@@ -17,11 +17,12 @@ const App: React.FC = () => {
   }
 
   if (screen === "game") {
-    return <GamePage />;
+    return <GamePage onEnd={() => setScreen("end")} />;
   }
 
   if (screen === "end") {
-    return <EndScreen onRestart={() => setScreen("start")} />;
+    // Restart should reset back into gameplay fresh
+    return <EndScreen onRestart={() => setScreen("game")} />;
   }
 
   return null;
