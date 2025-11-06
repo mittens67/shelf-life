@@ -1,31 +1,28 @@
-// src/App.tsx
-import React, { useState } from "react";
-import { GameLoader } from "./pages/game-loader";
-import { StartScreen } from "./pages/start-page";
-import { GamePage } from "./pages/game-page";
-import { EndScreen } from "./pages/end-screen";
+\import React, { useState } from "react";
+import { SoundProvider } from "./context/sound-context";
+import { GameLoop } from "./game-loop";
+import { SoundConfirmScreen } from "./pages/sound-confirm-screen";
 
 const App: React.FC = () => {
-  const [screen, setScreen] = useState<"loading" | "start" | "game" | "end">("loading");
+  const [soundConfirmed, setSoundConfirmed] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
-  if (screen === "loading") {
-    return <GameLoader onLoaded={() => setScreen("start")} />;
+  if (!soundConfirmed) {
+    return (
+      <SoundConfirmScreen
+        onSelect={(enableSound: boolean) => {
+          setSoundEnabled(enableSound);
+          setSoundConfirmed(true);
+        }}
+      />
+    );
   }
 
-  if (screen === "start") {
-    return <StartScreen onStart={() => setScreen("game")} />;
-  }
-
-  if (screen === "game") {
-    return <GamePage onEnd={() => setScreen("end")} />;
-  }
-
-  if (screen === "end") {
-    // Restart should reset back into gameplay fresh
-    return <EndScreen onRestart={() => setScreen("game")} />;
-  }
-
-  return null;
+  return (
+    <SoundProvider>
+      <GameLoop />
+    </SoundProvider>
+  );
 };
 
 export default App;
