@@ -1,4 +1,4 @@
-\import React, { useState } from "react";
+import React, { useState } from "react";
 import { SoundProvider } from "./context/sound-context";
 import { GameLoop } from "./game-loop";
 import { SoundConfirmScreen } from "./pages/sound-confirm-screen";
