@@ -1,20 +1,21 @@
+// src/hooks/use-preload.ts
 import { useEffect, useState } from "react";
 import { preloadAssets } from "../utils/preload-assets";
-import { CRITICAL_ASSETS } from "../assets/asset-manifest";
 
-export function usePreload() {
+export function usePreload(assets: string[]) {
   const [progress, setProgress] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const allAssets = [...CRITICAL_ASSETS.images, ...CRITICAL_ASSETS.sounds];
+    if (!assets || assets.length === 0) {
+      setIsLoaded(true);
+      return;
+    }
 
-    preloadAssets(allAssets, ({ progress }) => {
-      setProgress(progress);
-    }).then(() => {
+    preloadAssets(assets, ({ progress }) => setProgress(progress)).then(() => {
       setIsLoaded(true);
     });
-  }, []);
+  }, [JSON.stringify(assets)]);
 
   return { progress, isLoaded };
 }

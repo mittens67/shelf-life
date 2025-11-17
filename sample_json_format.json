@@ -1,0 +1,27 @@
+{
+  "id": "start",
+  "components": {
+    "dialogue": {
+      "lines": [
+        "You are working as a librarian...",
+        "You see your school mean girl on Instagram...",
+        "You feel restless. What do you do?"
+      ]
+    },
+    "choice": {
+      "options": [
+        { "label": "Rediscover your flair as an artist and baking skills", "nextNode": "hobbyRoute" },
+        { "label": "Take a leap of faith! Quit your job and travel", "nextNode": "nomadRoute" },
+        { "label": "Buy some ice cream and call it a day", "nextNode": "iceCreamRoute" }
+      ]
+    },
+    "asset": {
+      "image": "/assets/images/start/start-node.png",
+      "music": ""
+    },
+    "metadata": {
+      "id": "start",
+      "type": "dialogue"
+    }
+  }
+}

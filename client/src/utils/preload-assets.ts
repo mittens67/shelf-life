@@ -1,3 +1,6 @@
+// src/utils/preload-assets.ts
+import { AssetCache } from "./asset-cache";
+
 export interface PreloadResult {
   total: number;
   loaded: number;
@@ -8,8 +11,15 @@ export async function preloadAssets(
   assets: string[],
   onProgress?: (result: PreloadResult) => void
 ): Promise<void> {
+  const uniqueAssets = assets.filter((url) => !AssetCache.has(url));
+  const total = uniqueAssets.length;
+
+  if (total === 0) {
+    onProgress?.({ total: 0, loaded: 0, progress: 1 });
+    return;
+  }
+
   let loaded = 0;
-  const total = assets.length;
 
   const update = () => {
     loaded++;
@@ -18,28 +28,22 @@ export async function preloadAssets(
 
   const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-  const promises = assets.map(async (url) => {
-    if (url.endsWith(".mp3") || url.endsWith(".wav") || url.endsWith(".ogg")) {
-      try {
+  const promises = uniqueAssets.map(async (url) => {
+    try {
+      if (url.match(/\.(mp3|wav|ogg)$/i)) {
         const res = await fetch(url);
         const arrayBuffer = await res.arrayBuffer();
-        await audioContext.decodeAudioData(arrayBuffer); // ✅ ensures audio is ready
-        update();
-      } catch (err) {
-        console.warn("Audio failed to decode:", url, err);
-        update();
-      }
-    } else {
-      // Image case
-      try {
+        await audioContext.decodeAudioData(arrayBuffer);
+      } else if (url.match(/\.(png|jpg|jpeg|gif)$/i)) {
         const img = new Image();
         img.src = url;
-        await img.decode(); // ensures image is decoded before continuing
-        update();
-      } catch (err) {
-        console.warn("Image failed to load:", url, err);
-        update();
+        await img.decode();
       }
+      AssetCache.add(url);
+    } catch (err) {
+      console.warn(`⚠️ Failed to preload asset: ${url}`, err);
+    } finally {
+      update();
     }
   });
 

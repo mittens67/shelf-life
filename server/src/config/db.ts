@@ -1,8 +1,14 @@
 import mongoose from "mongoose";
 
 export const connectDB = async () => {
+  const uri = process.env.MONGO_URI;
+  if (!uri) {
+    console.error("❌ Missing MongoDB URI");
+    process.exit(1);
+  }
+
   try {
-    await mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/shelf_life");
+    await mongoose.connect(uri);
     console.log("✅ MongoDB connected");
   } catch (err) {
     console.error("❌ DB connection error:", err);

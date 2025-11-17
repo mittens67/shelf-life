@@ -13,6 +13,6 @@ export type Entity = {
     miniGame?: MiniGameComponent;
     ending?: EndingComponent;
     asset?: AssetComponent;
-    metadata: NodeMetadataComponent;
+    metadata?: NodeMetadataComponent;
   };
 };
