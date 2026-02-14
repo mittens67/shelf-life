@@ -32,7 +32,9 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
     }
     try {
       await audioRef.current.play();
-    } catch {}
+    } catch (err) {
+      console.log("Something went wrong with playing sound: ", err);
+    }
     setTimeout(() => onStart(), 300);
   };
 

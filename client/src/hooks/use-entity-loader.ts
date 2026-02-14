@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import api from "../api/axios";
 import { createEntityFromJSON } from "../ecs/factory/entity-factory";
 import { getEntityAssets } from "../utils/get-entity-assets";
 import { usePreload } from "./use-preload";
@@ -13,17 +14,19 @@ export function useEntityLoader(entityId: string) {
     async function fetchEntity() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/entity/${entityId}`);
-        const json = await res.json();
+        const res = await api.get(`/entity/${entityId}`);
+        console.log("Entity fetched: ", res);
+        console.log("Entity ID: ", entityId);
         if (cancelled) return;
 
-        const builtEntity = createEntityFromJSON(json);
+        const builtEntity = createEntityFromJSON(res.data);
         const assets = getEntityAssets(builtEntity);
 
         // Preload all entity assets before exposing it
         const { preloadAssets } = await import("../utils/preload-assets");
         await preloadAssets(assets);
         if (!cancelled) setEntity(builtEntity);
+        console.log("Entity loaded: ", builtEntity);
       } catch (err) {
         console.error(`Failed to load entity ${entityId}:`, err);
       } finally {
