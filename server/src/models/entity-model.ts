@@ -9,13 +9,11 @@ export interface IEntity extends Document {
     metadata?: { id: string; type: string };
     miniGame?: {
       type: "card-match" | "wheel-of-fortune";
-      // card-match fields
       theme?: string;
       cards?: string[];
       pairs?: number;
-      scores?: Record<number, string>;
-      // wheel-of-fortune fields
-      outcomes?: Record<number, { endingNode: string }>;
+      // Reconciled to match your JSON data's "scores" structure
+      scores?: Record<string, string | { endingNode: string }>;
     };
   };
 }
@@ -39,7 +37,6 @@ const entitySchema = new Schema<IEntity>(
         image: { type: String },
         music: { type: String },
       },
-      ending: { type: String },
       metadata: {
         id: { type: String },
         type: { type: String },
@@ -49,9 +46,9 @@ const entitySchema = new Schema<IEntity>(
         theme: { type: String },
         cards: [{ type: String }],
         pairs: { type: Number },
-        scores: { type: Map, of: String },
-        outcomes: { type: Map, of: { endingNode: String } },
-      }, // flexible placeholder
+        // Using Schema.Types.Mixed allows the flexible structure seen in your JSON
+        scores: { type: Map, of: Schema.Types.Mixed },
+      },
     },
   },
   { timestamps: true }

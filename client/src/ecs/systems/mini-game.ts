@@ -19,7 +19,7 @@ export class MiniGameSystem {
     }
 
     if (miniGame.type === "wheel-of-fortune") {
-      const nextNodeId = miniGame.outcomes?.[score]?.endingNode;
+      const nextNodeId = miniGame.scores?.[score]?.endingNode;
       return nextNodeId || null;
     }
 
