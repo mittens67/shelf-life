@@ -1,4 +1,4 @@
-import { getAudioContext } from "./audio-manager";
+import { getAudioContext, isSoundEnabled } from "./audio-manager";
 
 const loadedSounds: Record<string, AudioBuffer> = {};
 
@@ -12,6 +12,7 @@ export async function loadSound(url: string): Promise<void> {
 }
 
 export function playSound(url: string, volume = 1) {
+  if (!isSoundEnabled()) return;
   const ctx = getAudioContext();
   const buffer = loadedSounds[url];
   if (!buffer) {
@@ -29,9 +30,10 @@ export function playSound(url: string, volume = 1) {
 }
 
 export function playLoop(url: string, volume = 1) {
+  if (!isSoundEnabled()) return () => {};
   const ctx = getAudioContext();
   const buffer = loadedSounds[url];
-  if (!buffer) return;
+  if (!buffer) return () => {};
 
   const source = ctx.createBufferSource();
   const gain = ctx.createGain();

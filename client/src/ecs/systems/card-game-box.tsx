@@ -5,6 +5,9 @@ import { MiniGameSystem } from "./mini-game";
 import { MiniGameComponent } from "../components/mini-game";
 
 const CARD_BACK = "/assets/images/mini-games/card-game/common/card-back.png";
+const CARD_FRONT_BASE = "/assets/images/mini-games/card-game/";
+const CARD_FRONT_HOBBY_BASE = "hobby-route/";
+const CARD_FRONT_NOMAD_BASE = "nomad-route/";
 
 export const CardGameBox: React.FC<{
   entity: Entity;
@@ -16,6 +19,8 @@ export const CardGameBox: React.FC<{
   const [matched, setMatched] = useState<number[]>([]);
   const [failCount, setFailCount] = useState(0);
   const [locked, setLocked] = useState(false);
+
+  const cardFrontBase = CARD_FRONT_BASE + (entity.id=== "hobbyRoute" ? CARD_FRONT_HOBBY_BASE : CARD_FRONT_NOMAD_BASE);
 
   const system = new MiniGameSystem();
 
@@ -114,7 +119,7 @@ export const CardGameBox: React.FC<{
                       overflow: "hidden",
                     }}
                   >
-                    <img src={card} alt="card front" className="w-full h-full object-cover" />
+                    <img src={`${cardFrontBase}${card}`} alt="card front" className="w-full h-full object-cover" />
                   </div>
                 </div>
               </button>

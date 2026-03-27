@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { DialogueComponent } from "../components/dialog";
 import type { Entity } from "../types";
+import { useSound } from "../../context/sound-context";
 
 interface DialogueBoxProps {
   entity: Entity;
@@ -11,6 +12,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   entity,
   onComplete,
 }) => {
+  const { soundEnabled } = useSound();
   const dialogue = entity.components.dialogue as DialogueComponent;
   const [currentLine, setCurrentLine] = useState(dialogue.currentLine);
   const [displayedText, setDisplayedText] = useState("");
@@ -28,6 +30,15 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     audio.volume = 0.5;
     audioRef.current = audio;
   }, []);
+
+  /** Handle soundEnabled changes */
+  useEffect(() => {
+    if (!soundEnabled && audioRef.current) {
+      audioRef.current.pause();
+    } else if (soundEnabled && isTyping && audioRef.current) {
+      audioRef.current.play().catch(() => {});
+    }
+  }, [soundEnabled, isTyping]);
 
   /** Unlock audio after first click or key press */
   useEffect(() => {
@@ -63,7 +74,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     setDisplayedText("");
     setIsTyping(true);
 
-    if (audioUnlocked && audioRef.current) {
+    if (soundEnabled && audioUnlocked && audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(() => {});
     }

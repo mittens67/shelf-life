@@ -29,7 +29,7 @@ export const GamePage: React.FC<GamePageProps> = ({ onEnd }) => {
   }
 
   const handleDialogueComplete = () => {
-    if (entity.components.choice) setPhase("choice");
+    if (entity.components.choice?.choices.length > 0) setPhase("choice");
     else if (entity.components.miniGame) setPhase("miniGame");
     else if (entity.components.ending) onEnd();
   };
@@ -44,6 +44,8 @@ export const GamePage: React.FC<GamePageProps> = ({ onEnd }) => {
     setPhase("dialogue");
   };
 
+  console.log("Phase: ", phase);
+  console.log("Entity: ", entity);
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
       {bgSystem.render(entity)}
@@ -51,7 +53,7 @@ export const GamePage: React.FC<GamePageProps> = ({ onEnd }) => {
         {phase === "dialogue" && (
           <DialogueBox entity={entity} onComplete={handleDialogueComplete} />
         )}
-        {phase === "choice" && (
+        {phase === "choice" && entity.components.choice?.choices.length > 0 && (
           <ChoiceBox entity={entity} onChoiceSelect={handleChoiceSelect} />
         )}
         {phase === "miniGame" && entity.components.miniGame?.type === "card-match" && (

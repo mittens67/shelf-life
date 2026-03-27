@@ -1,4 +1,5 @@
 let audioContext: AudioContext | null = null;
+let soundEnabled = true;
 
 export function getAudioContext() {
   if (!audioContext) {
@@ -12,4 +13,19 @@ export function resumeAudioContext() {
   if (ctx.state === "suspended") {
     ctx.resume();
   }
+}
+
+export function setSoundEnabled(enabled: boolean) {
+  soundEnabled = enabled;
+  const ctx = getAudioContext();
+  if (!enabled && ctx.state === "running") {
+    // Optionally suspend or just let individual players handle it
+    // ctx.suspend(); 
+  } else if (enabled && ctx.state === "suspended") {
+    ctx.resume();
+  }
+}
+
+export function isSoundEnabled() {
+  return soundEnabled;
 }

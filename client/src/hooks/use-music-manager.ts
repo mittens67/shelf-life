@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
+import { useSound } from "../context/sound-context";
 
 export function useMusicManager() {
+  const { soundEnabled } = useSound();
   const currentTrack = useRef<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -20,11 +22,13 @@ export function useMusicManager() {
     audioRef.current = audio;
     currentTrack.current = track;
 
-    // Start playback with fade-in
-    audio.play().catch(() => {
-      console.warn("Autoplay blocked; will resume on user action");
-    });
-    fadeIn(audio, 1000);
+    if (soundEnabled) {
+      // Start playback with fade-in
+      audio.play().catch(() => {
+        console.warn("Autoplay blocked; will resume on user action");
+      });
+      fadeIn(audio, 1000);
+    }
   };
 
   const stopMusic = () => {
@@ -59,9 +63,23 @@ export function useMusicManager() {
     }, duration * step);
   };
 
+  // Handle sound toggle
+  useEffect(() => {
+    if (!soundEnabled && audioRef.current) {
+      fadeOut(audioRef.current, 500);
+    } else if (soundEnabled && audioRef.current && currentTrack.current) {
+      audioRef.current.play().catch(() => {});
+      fadeIn(audioRef.current, 1000);
+    }
+  }, [soundEnabled]);
+
   // stop on unmount
   useEffect(() => {
-    return () => stopMusic();
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
   }, []);
 
   return { playMusic, stopMusic };

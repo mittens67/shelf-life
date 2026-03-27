@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { preloadAssets } from "../utils/preload-assets";
+import { useSound } from "../context/sound-context";
 
 interface EndScreenProps {
   onRestart: () => void;
@@ -12,6 +13,7 @@ const END_ASSETS = {
 };
 
 export const EndScreen: React.FC<EndScreenProps> = ({ onRestart }) => {
+  const { soundEnabled } = useSound();
   const [loaded, setLoaded] = useState(false);
   const [hover, setHover] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -23,13 +25,15 @@ export const EndScreen: React.FC<EndScreenProps> = ({ onRestart }) => {
   }, []);
 
   const handleRestart = async () => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio(END_ASSETS.clickSound);
-    }
-    try {
-      await audioRef.current.play();
-    } catch (err) {
-      console.warn("Restart sound failed:", err);
+    if (soundEnabled) {
+      if (!audioRef.current) {
+        audioRef.current = new Audio(END_ASSETS.clickSound);
+      }
+      try {
+        await audioRef.current.play();
+      } catch (err) {
+        console.warn("Restart sound failed:", err);
+      }
     }
     setTimeout(() => onRestart(), 300);
   };

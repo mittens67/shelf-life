@@ -17,6 +17,8 @@ export function createEntityFromJSON(json: any): Partial<Entity> {
   const entity: Partial<Entity> = { id: json.id, components: {} };
 
   for (const [key, data] of Object.entries(json.components)) {
+    console.log("Component key: ", key);
+    console.log("Component data: ", data);
     const factory = COMPONENT_REGISTRY[key];
     if (factory) {
       entity.components[key] = factory(data);

@@ -1,5 +1,5 @@
-// src/utils/preload-assets.ts
 import { AssetCache } from "./asset-cache";
+import { getAudioContext } from "./audio-manager";
 
 export interface PreloadResult {
   total: number;
@@ -26,7 +26,7 @@ export async function preloadAssets(
     onProgress?.({ total, loaded, progress: loaded / total });
   };
 
-  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const audioContext = getAudioContext();
 
   const promises = uniqueAssets.map(async (url) => {
     try {

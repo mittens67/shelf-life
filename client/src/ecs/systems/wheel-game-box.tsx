@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import type { Entity } from "../types";
 import { MiniGameSystem } from "./mini-game";
 import { MiniGameComponent } from "../components/mini-game";
+import { useSound } from "../../context/sound-context";
 
 const WHEEL_IMG = "/assets/images/mini-games/wheel-of-fortune/wheel.png";
 const PIN_IMG = "/assets/images/mini-games/wheel-of-fortune/wheel-pin.png";
@@ -12,6 +13,7 @@ export const WheelGameBox: React.FC<{
   entity: Entity;
   onComplete: (nextNode: string) => void;
 }> = ({ entity, onComplete }) => {
+  const { soundEnabled } = useSound();
   const miniGame = entity.components.miniGame as MiniGameComponent;
   const [spinning, setSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
@@ -44,8 +46,10 @@ export const WheelGameBox: React.FC<{
     setResult(null);
 
     // Play spin sound
-    audioRef.current?.currentTime && (audioRef.current.currentTime = 0);
-    audioRef.current?.play().catch(() => {});
+    if (soundEnabled && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
 
     // Determine random result (1–6)
     const outcome = Math.floor(Math.random() * 6) + 1;

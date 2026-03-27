@@ -1,6 +1,6 @@
-// src/pages/start-screen.tsx
 import React, { useRef, useState } from "react";
 import { usePreload } from "../hooks/use-preload";
+import { useSound } from "../context/sound-context";
 
 interface StartScreenProps {
   onStart: () => void;
@@ -14,6 +14,7 @@ const START_ASSETS = [
 ];
 
 export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
+  const { soundEnabled } = useSound();
   const { isLoaded } = usePreload(START_ASSETS);
   const [hover, setHover] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -27,13 +28,15 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
   }
 
   const handleStartClick = async () => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio("/assets/sounds/button.mp3");
-    }
-    try {
-      await audioRef.current.play();
-    } catch (err) {
-      console.log("Something went wrong with playing sound: ", err);
+    if (soundEnabled) {
+      if (!audioRef.current) {
+        audioRef.current = new Audio("/assets/sounds/button.mp3");
+      }
+      try {
+        await audioRef.current.play();
+      } catch (err) {
+        console.log("Something went wrong with playing sound: ", err);
+      }
     }
     setTimeout(() => onStart(), 300);
   };
