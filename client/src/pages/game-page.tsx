@@ -29,9 +29,18 @@ export const GamePage: React.FC<GamePageProps> = ({ onEnd }) => {
   }
 
   const handleDialogueComplete = () => {
-    if (entity.components.choice?.choices.length > 0) setPhase("choice");
-    else if (entity.components.miniGame) setPhase("miniGame");
-    else if (entity.components.ending) onEnd();
+    const isEnding = 
+      entity.components.ending || 
+      entity.components.metadata?.type === "ending";
+      console.log("Is ending node? ", isEnding);
+
+    if (entity.components.choice?.choices.length > 0) {
+      setPhase("choice");
+    } else if (isEnding) {
+      onEnd();
+    } else if (entity.components.miniGame) {
+      setPhase("miniGame");
+    } 
   };
 
   const handleChoiceSelect = (nextId: string) => {

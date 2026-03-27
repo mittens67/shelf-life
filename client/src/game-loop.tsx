@@ -9,6 +9,7 @@ export const GameLoop: React.FC = () => {
   const [screen, setScreen] = useState<"start" | "loading" | "game" | "end">("start");
   const { soundEnabled } = useSound();
   console.log("Sound enabled flag is : ", soundEnabled);
+  console.log("screen is: ", screen);
 
   switch (screen) {
     case "start":
