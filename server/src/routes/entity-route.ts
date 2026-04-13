@@ -4,6 +4,6 @@ import { addEntity, getEntityById } from "../controllers/entity-controller";
 const router = Router();
 
 router.get("/:id", getEntityById);
-router.post('/add-entity', addEntity);
+router.post("/", addEntity);
 
 export default router;

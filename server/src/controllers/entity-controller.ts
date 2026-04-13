@@ -18,17 +18,15 @@ export const getEntityById = async (req: Request, res: Response) => {
 };
 
 export const addEntity = async (req: Request, res: Response) => {
-  const { data } = req.body;
-  console.log(req.body);
-  console.log("********************8")
   try {
+    const { data } = req.body;
     const entity = new EntityModel({
-      ...data
+      ...data,
     });
     await entity.save();
-    res.status(201).json({ message: "Data add done" });
+    res.status(201).json({ message: "Entity added successfully" });
   } catch (error) {
-    console.error("❌ Error fetching entity:", error);
+    console.error("❌ Error adding entity:", error);
     res.status(500).json({ message: "Server error" });
   }
-}
+};
