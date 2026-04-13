@@ -15,7 +15,7 @@ interface GamePageProps {
 export const GamePage: React.FC<GamePageProps> = ({ onEnd }) => {
   const [currentId, setCurrentId] = useState("start");
   const [phase, setPhase] = useState<"dialogue" | "choice" | "miniGame">("dialogue");
-  const { entity, loading } = useEntityLoader(currentId);
+  const { entity, loading, progress } = useEntityLoader(currentId);
   const { playMusic, stopMusic } = useMusicManager();
   const bgSystem = useMemo(() => new BackgroundRenderSystem(), []);
 
@@ -25,7 +25,7 @@ export const GamePage: React.FC<GamePageProps> = ({ onEnd }) => {
   }, [playMusic, stopMusic]);
 
   if (loading || !entity) {
-    return <LoadingPage progress={1} />;
+    return <LoadingPage progress={progress} />;
   }
 
   const handleDialogueComplete = () => {

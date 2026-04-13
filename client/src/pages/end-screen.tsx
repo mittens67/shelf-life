@@ -1,10 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import { preloadAssets } from "../utils/preload-assets";
+import { usePreload } from "../hooks/use-preload";
 import { useSound } from "../context/sound-context";
+import { LoadingPage } from "./loading-page";
 
 interface EndScreenProps {
   onRestart: () => void;
 }
+
+const END_ASSETS_PATHS = [
+  "/assets/images/start-end-screens/game-end-screen.png",
+  "/assets/images/game-ui/restart-btn.png",
+  "/assets/sounds/button.mp3",
+];
 
 const END_ASSETS = {
   bg: "/assets/images/start-end-screens/game-end-screen.png",
@@ -14,15 +21,9 @@ const END_ASSETS = {
 
 export const EndScreen: React.FC<EndScreenProps> = ({ onRestart }) => {
   const { soundEnabled } = useSound();
-  const [loaded, setLoaded] = useState(false);
+  const { progress, isLoaded } = usePreload(END_ASSETS_PATHS);
   const [hover, setHover] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  // ✅ Preload assets
-  useEffect(() => {
-    const assets = [END_ASSETS.bg, END_ASSETS.button, END_ASSETS.clickSound];
-    preloadAssets(assets, () => {}).then(() => setLoaded(true));
-  }, []);
 
   const handleRestart = async () => {
     if (soundEnabled) {
@@ -49,12 +50,8 @@ export const EndScreen: React.FC<EndScreenProps> = ({ onRestart }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  if (!loaded) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
-        <p>Loading end screen...</p>
-      </div>
-    );
+  if (!isLoaded) {
+    return <LoadingPage progress={progress} />;
   }
 
   return (

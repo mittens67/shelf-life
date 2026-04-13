@@ -7,12 +7,14 @@ import { usePreload } from "./use-preload";
 export function useEntityLoader(entityId: string) {
   const [entity, setEntity] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
 
     async function fetchEntity() {
       setLoading(true);
+      setProgress(0);
       try {
         const res = await api.get(`/entities/${entityId}`);
         console.log("Entity fetched: ", res);
@@ -24,8 +26,14 @@ export function useEntityLoader(entityId: string) {
 
         // Preload all entity assets before exposing it
         const { preloadAssets } = await import("../utils/preload-assets");
-        await preloadAssets(assets);
-        if (!cancelled) setEntity(builtEntity);
+        await preloadAssets(assets, ({ progress }) => {
+          if (!cancelled) setProgress(progress);
+        });
+        
+        if (!cancelled) {
+          setEntity(builtEntity);
+          setProgress(1);
+        }
         console.log("Entity loaded: ", builtEntity);
       } catch (err) {
         console.error(`Failed to load entity ${entityId}:`, err);
@@ -40,5 +48,5 @@ export function useEntityLoader(entityId: string) {
     };
   }, [entityId]);
 
-  return { entity, loading };
+  return { entity, loading, progress };
 }

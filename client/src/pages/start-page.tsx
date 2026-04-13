@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { usePreload } from "../hooks/use-preload";
 import { useSound } from "../context/sound-context";
+import { LoadingPage } from "./loading-page";
 
 interface StartScreenProps {
   onStart: () => void;
@@ -15,16 +16,12 @@ const START_ASSETS = [
 
 export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
   const { soundEnabled } = useSound();
-  const { isLoaded } = usePreload(START_ASSETS);
+  const { progress, isLoaded } = usePreload(START_ASSETS);
   const [hover, setHover] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
-        <p>Loading start screen...</p>
-      </div>
-    );
+    return <LoadingPage progress={progress} />;
   }
 
   const handleStartClick = async () => {
