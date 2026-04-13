@@ -16,7 +16,7 @@ export function useEntityLoader(entityId: string) {
       setLoading(true);
       setProgress(0);
       try {
-        const res = await api.get(`/entities/${entityId}`);
+        const res = await api.get(`/api/entities/${entityId}`);
         console.log("Entity fetched: ", res);
         console.log("Entity ID: ", entityId);
         if (cancelled) return;
