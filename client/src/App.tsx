@@ -4,10 +4,11 @@ import { useSound } from "./context/sound-context";
 import { GameLoop } from "./game-loop";
 import { SoundConfirmScreen } from "./pages/sound-confirm-screen";
 
+import { SoundToggle } from "./components/sound-toggle";
+
 const App: React.FC = () => {
   const [soundConfirmed, setSoundConfirmed] = useState(false);
-  const {setSoundEnabled } = useSound();
-  //const [soundEnabled, setSoundEnabled] = useState(true);
+  const { setSoundEnabled } = useSound();
 
   if (!soundConfirmed) {
     return (
@@ -21,9 +22,10 @@ const App: React.FC = () => {
   }
 
   return (
-    // <SoundProvider>
+    <>
+      <SoundToggle />
       <GameLoop />
-    // </SoundProvider>
+    </>
   );
 };
 
