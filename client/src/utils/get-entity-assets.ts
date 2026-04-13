@@ -21,11 +21,31 @@ export function getEntityAssets(entity: Partial<Entity>): string[] {
 //   }
 
   // 🎮 Mini-game assets
-  if (entity.components.miniGame) {
+  if (entity?.components?.miniGame) {
     const miniGame = entity.components.miniGame;
-    if (miniGame.cards?.length) assets.push(...miniGame.cards);
-    // if (miniGame.background) assets.push(miniGame.background);
-    // if (miniGame.ui?.length) assets.push(...miniGame.ui);
+    
+    if (miniGame.type === "card-match") {
+      // Common card back
+      assets.push("/assets/images/mini-games/card-game/common/card-back.png");
+      
+      // Determine the correct path prefix based on entity ID
+      const prefix = entity.id === "hobbyRoute" 
+        ? "/assets/images/mini-games/card-game/hobby-route/" 
+        : "/assets/images/mini-games/card-game/nomad-route/";
+      
+      if (miniGame.cards?.length) {
+        assets.push(...miniGame.cards.map(card => `${prefix}${card}`));
+      }
+    }
+
+    if (miniGame.type === "wheel-of-fortune") {
+      assets.push(
+        "/assets/images/mini-games/wheel-of-fortune/wheel.png",
+        "/assets/images/mini-games/wheel-of-fortune/wheel-pin.png",
+        "/assets/images/mini-games/wheel-of-fortune/spin-btn.png",
+        "/assets/sounds/wheel-spin.mp3"
+      );
+    }
   }
 
   // 🪩 Any custom future asset lists, like music
