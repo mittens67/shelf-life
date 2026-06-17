@@ -17,8 +17,6 @@ export function useEntityLoader(entityId: string) {
       setProgress(0);
       try {
         const res = await api.get(`/api/entities/${entityId}`);
-        console.log("Entity fetched: ", res);
-        console.log("Entity ID: ", entityId);
         if (cancelled) return;
 
         const builtEntity = createEntityFromJSON(res.data);
@@ -29,12 +27,11 @@ export function useEntityLoader(entityId: string) {
         await preloadAssets(assets, ({ progress }) => {
           if (!cancelled) setProgress(progress);
         });
-        
+
         if (!cancelled) {
           setEntity(builtEntity);
           setProgress(1);
         }
-        console.log("Entity loaded: ", builtEntity);
       } catch (err) {
         console.error(`Failed to load entity ${entityId}:`, err);
       } finally {

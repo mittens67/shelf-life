@@ -1,5 +1,5 @@
 // src/context/SoundContext.tsx
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { setSoundEnabled as setGlobalSoundEnabled } from "../utils/audio-manager";
 
 interface SoundContextType {
@@ -18,7 +18,7 @@ export const SoundProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setGlobalSoundEnabled(soundEnabled);
   }, [soundEnabled]);
 
-  const toggleSound = () => setSoundEnabled((prev) => !prev);
+  const toggleSound = useCallback(() => setSoundEnabled((prev) => !prev), []);
 
   return (
     <SoundContext.Provider value={{ soundEnabled, setSoundEnabled, toggleSound }}>

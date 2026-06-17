@@ -22,17 +22,22 @@ export const GamePage: React.FC<GamePageProps> = ({ onEnd }) => {
   useEffect(() => {
     playMusic("/assets/music/main-bgm.mp3");
     return () => stopMusic();
-  }, [playMusic, stopMusic]);
+    // Intentionally run once for the lifetime of GamePage: the track is
+    // constant for the whole in-game session, and re-running this on every
+    // phase/entity change (playMusic/stopMusic identity churn) is what
+    // caused the music to restart/overlap on every dialogue/choice/mini-game
+    // transition.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (loading || !entity) {
     return <LoadingPage progress={progress} />;
   }
 
   const handleDialogueComplete = () => {
-    const isEnding = 
-      entity.components.ending || 
+    const isEnding =
+      entity.components.ending ||
       entity.components.metadata?.type === "ending";
-      console.log("Is ending node? ", isEnding);
 
     if (entity.components.choice?.choices.length > 0) {
       setPhase("choice");
@@ -53,8 +58,6 @@ export const GamePage: React.FC<GamePageProps> = ({ onEnd }) => {
     setPhase("dialogue");
   };
 
-  console.log("Phase: ", phase);
-  console.log("Entity: ", entity);
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
       {bgSystem.render(entity)}

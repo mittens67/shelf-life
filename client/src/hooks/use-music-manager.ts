@@ -1,18 +1,57 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useSound } from "../context/sound-context";
 
 export function useMusicManager() {
   const { soundEnabled } = useSound();
   const currentTrack = useRef<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const playMusic = (track: string) => {
+  // Cancel any in-flight fade so a new one never fights over audio.volume
+  const clearActiveFade = useCallback(() => {
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current);
+      fadeIntervalRef.current = null;
+    }
+  }, []);
+
+  const fadeIn = useCallback((audio: HTMLAudioElement, duration: number) => {
+    clearActiveFade();
+    let volume = audio.volume;
+    const step = 0.05;
+    fadeIntervalRef.current = setInterval(() => {
+      volume += step;
+      if (volume >= 1) {
+        volume = 1;
+        clearActiveFade();
+      }
+      audio.volume = volume;
+    }, duration * step);
+  }, [clearActiveFade]);
+
+  const fadeOut = useCallback((audio: HTMLAudioElement, duration: number) => {
+    clearActiveFade();
+    let volume = audio.volume;
+    const step = 0.05;
+    fadeIntervalRef.current = setInterval(() => {
+      volume -= step;
+      if (volume <= 0) {
+        volume = 0;
+        clearActiveFade();
+        audio.pause();
+      }
+      audio.volume = volume;
+    }, duration * step);
+  }, [clearActiveFade]);
+
+  const playMusic = useCallback((track: string) => {
     // Prevent restarting the same music
     if (currentTrack.current === track) return;
 
-    // Stop previous track if any
+    // Stop previous track if any (no need to wait for its fade — clearActiveFade
+    // inside fadeOut/fadeIn already prevents the old and new fades from racing)
     if (audioRef.current) {
-      fadeOut(audioRef.current, 1000);
+      audioRef.current.pause();
     }
 
     // Create new audio
@@ -29,39 +68,12 @@ export function useMusicManager() {
       });
       fadeIn(audio, 1000);
     }
-  };
+  }, [soundEnabled, fadeIn]);
 
-  const stopMusic = () => {
+  const stopMusic = useCallback(() => {
     if (audioRef.current) fadeOut(audioRef.current, 1000);
     currentTrack.current = null;
-  };
-
-  const fadeIn = (audio: HTMLAudioElement, duration: number) => {
-    let volume = 0;
-    const step = 0.05;
-    const interval = setInterval(() => {
-      volume += step;
-      if (volume >= 1) {
-        volume = 1;
-        clearInterval(interval);
-      }
-      audio.volume = volume;
-    }, duration * step);
-  };
-
-  const fadeOut = (audio: HTMLAudioElement, duration: number) => {
-    let volume = audio.volume;
-    const step = 0.05;
-    const interval = setInterval(() => {
-      volume -= step;
-      if (volume <= 0) {
-        volume = 0;
-        clearInterval(interval);
-        audio.pause();
-      }
-      audio.volume = volume;
-    }, duration * step);
-  };
+  }, [fadeOut]);
 
   // Handle sound toggle
   useEffect(() => {
@@ -71,16 +83,17 @@ export function useMusicManager() {
       audioRef.current.play().catch(() => {});
       fadeIn(audioRef.current, 1000);
     }
-  }, [soundEnabled]);
+  }, [soundEnabled, fadeOut, fadeIn]);
 
   // stop on unmount
   useEffect(() => {
     return () => {
+      clearActiveFade();
       if (audioRef.current) {
         audioRef.current.pause();
       }
     };
-  }, []);
+  }, [clearActiveFade]);
 
   return { playMusic, stopMusic };
 }

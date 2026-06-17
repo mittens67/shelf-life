@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { DialogueComponent } from "../components/dialog";
 import type { Entity } from "../types";
 import { useSound } from "../../context/sound-context";
@@ -104,7 +104,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     };
   }, [fullLine, audioUnlocked]);
 
-  const advanceDialogue = () => {
+  const advanceDialogue = useCallback(() => {
     if (isTyping) {
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (audioRef.current) {
@@ -122,7 +122,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     } else {
       onComplete();
     }
-  };
+  }, [isTyping, fullLine, currentLine, dialogue, onComplete]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -133,17 +133,17 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentLine, isTyping, fullLine]);
+  }, [advanceDialogue]);
 
   return (
     <div
       className="
-        absolute bottom-8 left-1/2 transform -translate-x-1/2 w-3/4 select-none
-        p-6 bg-black/40 border-8 border-[#563232] ring-4 ring-[#4f200f] rounded-[3rem]
+        absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 w-[92%] sm:w-3/4 select-none
+        p-4 sm:p-6 bg-black/40 border-4 sm:border-8 border-[#563232] ring-2 sm:ring-4 ring-[#4f200f] rounded-3xl sm:rounded-[3rem]
         shadow-2xl shadow-black/80 text-white backdrop-blur-md
       "
     >
-      <p className="mb-8 text-xl leading-relaxed min-h-[5rem]">
+      <p className="mb-4 sm:mb-8 text-base sm:text-xl leading-relaxed min-h-16 sm:min-h-20">
         {displayedText}
         {isTyping && <span className="animate-pulse">▋</span>}
       </p>
@@ -152,11 +152,12 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         <button
           onClick={advanceDialogue}
           className="
-            px-6 py-2 rounded-xl text-lg font-semibold 
-            bg-rose-300 text-amber-900 
-            border-2 border-amber-900 
+            px-5 sm:px-6 py-2 rounded-xl text-base sm:text-lg font-semibold
+            bg-rose-300 text-amber-900
+            border-2 border-amber-900
             hover:bg-rose-200 hover:scale-[1.02] transition duration-150
             shadow-md
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black
           "
         >
           {isTyping ? "Skip" : "Next"}

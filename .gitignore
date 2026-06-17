@@ -2,3 +2,8 @@ RESEARCH.md
 story.json
 SYSTEM_DESIGN.md
 system_design.png
+
+# Environment variables
+.env
+.env.*
+!.env.example

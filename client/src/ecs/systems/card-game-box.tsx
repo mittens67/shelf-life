@@ -1,5 +1,5 @@
 // src/ecs/systems/card-game-box.tsx
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import type { Entity } from "../types";
 import { MiniGameSystem } from "./mini-game";
 import { MiniGameComponent } from "../components/mini-game";
@@ -8,6 +8,9 @@ const CARD_BACK = "/assets/images/mini-games/card-game/common/card-back.png";
 const CARD_FRONT_BASE = "/assets/images/mini-games/card-game/";
 const CARD_FRONT_HOBBY_BASE = "hobby-route/";
 const CARD_FRONT_NOMAD_BASE = "nomad-route/";
+
+// Stateless system — a single shared instance avoids reallocating it every render
+const system = new MiniGameSystem();
 
 export const CardGameBox: React.FC<{
   entity: Entity;
@@ -20,9 +23,7 @@ export const CardGameBox: React.FC<{
   const [failCount, setFailCount] = useState(0);
   const [locked, setLocked] = useState(false);
 
-  const cardFrontBase = CARD_FRONT_BASE + (entity.id=== "hobbyRoute" ? CARD_FRONT_HOBBY_BASE : CARD_FRONT_NOMAD_BASE);
-
-  const system = new MiniGameSystem();
+  const cardFrontBase = CARD_FRONT_BASE + (entity.id === "hobbyRoute" ? CARD_FRONT_HOBBY_BASE : CARD_FRONT_NOMAD_BASE);
 
   useEffect(() => {
     if (!miniGame.cards || miniGame.cards.length < 5) return;
@@ -34,7 +35,7 @@ export const CardGameBox: React.FC<{
     setCards(shuffled);
   }, [miniGame]);
 
-  const handleFlip = (index: number) => {
+  const handleFlip = useCallback((index: number) => {
     if (locked || flipped.includes(index) || matched.includes(index)) return;
 
     const newFlipped = [...flipped, index];
@@ -57,7 +58,22 @@ export const CardGameBox: React.FC<{
         setLocked(false);
       }, 1000);
     }
-  };
+  }, [locked, flipped, matched, cards]);
+
+  // Number keys 1-9 flip the corresponding card directly
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (/^Digit[1-9]$/.test(e.code)) {
+        const index = Number(e.code.slice(5)) - 1;
+        if (index < cards.length) {
+          e.preventDefault();
+          handleFlip(index);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [cards.length, handleFlip]);
 
   useEffect(() => {
     if (matched.length >= (miniGame.pairs ?? 4) * 2) {
@@ -74,15 +90,16 @@ export const CardGameBox: React.FC<{
   }, [matched, failCount]);
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-md">
-      <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-md px-2">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
         {cards.map((card, i) => {
           const isFlipped = flipped.includes(i) || matched.includes(i);
           return (
             <div key={i} className="relative" style={{ perspective: 1000 }}>
               <button
                 onClick={() => handleFlip(i)}
-                className="w-20 sm:w-28 md:w-32 lg:w-40 xl:w-48 aspect-[3/4] p-0 border-0 bg-transparent cursor-pointer"
+                aria-label={`Card ${i + 1}`}
+                className="w-16 sm:w-28 md:w-32 lg:w-40 xl:w-48 aspect-3/4 p-0 border-0 bg-transparent cursor-pointer rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <div
                   style={{

@@ -1,15 +1,11 @@
 import React, { useState } from "react";
 import { GameLoader } from "./pages/game-loader";
-import { useSound } from "./context/sound-context";
 import { StartScreen } from "./pages/start-page";
 import { GamePage } from "./pages/game-page";
 import { EndScreen } from "./pages/end-screen";
 
 export const GameLoop: React.FC = () => {
   const [screen, setScreen] = useState<"start" | "loading" | "game" | "end">("start");
-  const { soundEnabled } = useSound();
-  console.log("Sound enabled flag is : ", soundEnabled);
-  console.log("screen is: ", screen);
 
   switch (screen) {
     case "start":

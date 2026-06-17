@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { usePreload } from "../hooks/use-preload";
 import { useSound } from "../context/sound-context";
 import { LoadingPage } from "./loading-page";
@@ -25,7 +25,7 @@ export const EndScreen: React.FC<EndScreenProps> = ({ onRestart }) => {
   const [hover, setHover] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const handleRestart = async () => {
+  const handleRestart = useCallback(async () => {
     if (soundEnabled) {
       if (!audioRef.current) {
         audioRef.current = new Audio(END_ASSETS.clickSound);
@@ -37,18 +37,19 @@ export const EndScreen: React.FC<EndScreenProps> = ({ onRestart }) => {
       }
     }
     setTimeout(() => onRestart(), 300);
-  };
+  }, [soundEnabled, onRestart]);
 
   // ✅ Keyboard shortcut (Enter / Space)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Enter" || e.code === "Space") {
+        e.preventDefault();
         handleRestart();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [handleRestart]);
 
   if (!isLoaded) {
     return <LoadingPage progress={progress} />;
@@ -63,24 +64,25 @@ export const EndScreen: React.FC<EndScreenProps> = ({ onRestart }) => {
         backgroundPosition: "center",
       }}
     >
-      {/* Restart button — slightly to the right and below center */}
-      <img
-        src={END_ASSETS.button}
-        alt="Restart"
+      {/* Restart button — slightly to the right and below center.
+          Translation lives in Tailwind classes (not inline style) so it
+          composes with the hover scale instead of overriding it. */}
+      <button
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
         onClick={handleRestart}
-        className={`absolute transition-transform duration-150 ${
+        aria-label="Restart Game"
+        className={`absolute top-[55%] left-[51%] -translate-x-1/2 -translate-y-1/2 w-32 sm:w-40 md:w-48 rounded-2xl transition-transform duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black/50 ${
           hover ? "scale-110" : "scale-100"
-        } cursor-pointer`}
-        style={{
-          width: "200px",
-          filter: hover ? "brightness(1.1)" : "brightness(1)",
-          top: "55%", // ↓ slightly below center
-          left: "51%", // → slightly to the right
-          transform: "translate(-50%, -50%)",
-        }}
-      />
+        }`}
+      >
+        <img
+          src={END_ASSETS.button}
+          alt=""
+          className="w-full"
+          style={{ filter: hover ? "brightness(1.1)" : "brightness(1)" }}
+        />
+      </button>
     </div>
   );
 };

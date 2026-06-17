@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { Entity } from "../types";
 import { MiniGameSystem } from "./mini-game";
-import { MiniGameComponent } from "../components/mini-game";
 import { useSound } from "../../context/sound-context";
 
 const WHEEL_IMG = "/assets/images/mini-games/wheel-of-fortune/wheel.png";
@@ -9,37 +8,25 @@ const PIN_IMG = "/assets/images/mini-games/wheel-of-fortune/wheel-pin.png";
 const SPIN_BTN_IMG = "/assets/images/mini-games/wheel-of-fortune/spin-btn.png";
 const SPIN_SFX = "/assets/sounds/wheel-spin.mp3";
 
+// Stateless system — a single shared instance keeps handleSpin's identity stable
+const system = new MiniGameSystem();
+
 export const WheelGameBox: React.FC<{
   entity: Entity;
   onComplete: (nextNode: string) => void;
 }> = ({ entity, onComplete }) => {
   const { soundEnabled } = useSound();
-  const miniGame = entity.components.miniGame as MiniGameComponent;
   const [spinning, setSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [result, setResult] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const system = new MiniGameSystem();
 
   // 🎵 Preload sound
   useEffect(() => {
     audioRef.current = new Audio(SPIN_SFX);
   }, []);
 
-  // 🎮 Allow spacebar to trigger spin
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
-        e.preventDefault();
-        handleSpin();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  });
-
-  const handleSpin = () => {
+  const handleSpin = useCallback(() => {
     if (spinning) return;
 
     setSpinning(true);
@@ -69,13 +56,27 @@ export const WheelGameBox: React.FC<{
       const nextNode = system.handleMiniGame(entity, outcome);
       if (nextNode) onComplete(nextNode);
     }, 5000);
-  };
+  }, [spinning, soundEnabled, entity, onComplete]);
+
+  // 🎮 Allow spacebar to trigger spin
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        handleSpin();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleSpin]);
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-md">
-      {/* 🎯 Wheel container */}
+      {/* 🎯 Wheel container — clamp() keeps the wheel, pin, and button scaling
+          smoothly and proportionally across the whole viewport range instead
+          of each hitting its own max-width cap at a different breakpoint */}
       <div
-        className="relative w-[85vw] max-w-[30rem] sm:max-w-[35rem] md:max-w-[40rem] aspect-square"
+        className="relative w-[clamp(16rem,85vw,40rem)] aspect-square"
         style={{ perspective: 1000 }}
       >
         {/* 🌀 Wheel */}
@@ -95,7 +96,7 @@ export const WheelGameBox: React.FC<{
         <img
           src={PIN_IMG}
           alt="Pin"
-          className="absolute top-[-1%] left-1/2 -translate-x-1/2 w-[8vw] max-w-[2.5rem] sm:max-w-[3rem] md:max-w-[3.5rem] object-contain z-10"
+          className="absolute top-[-1%] left-1/2 -translate-x-1/2 w-[clamp(1.75rem,8vw,3.5rem)] object-contain z-10"
         />
       </div>
 
@@ -103,7 +104,7 @@ export const WheelGameBox: React.FC<{
       <button
         onClick={handleSpin}
         disabled={spinning}
-        className={`mt-10 transition-transform hover:scale-105 active:scale-95 focus:outline-none ${
+        className={`mt-10 transition-transform hover:scale-105 active:scale-95 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
           spinning ? "opacity-50 cursor-not-allowed" : ""
         }`}
         aria-label="Spin the wheel (or press Space)"
@@ -111,7 +112,7 @@ export const WheelGameBox: React.FC<{
         <img
           src={SPIN_BTN_IMG}
           alt="Spin Button"
-          className="w-[20vw] max-w-[8rem] sm:max-w-[10rem] md:max-w-[12rem] object-contain"
+          className="w-[clamp(5rem,20vw,12rem)] object-contain"
         />
       </button>
 
